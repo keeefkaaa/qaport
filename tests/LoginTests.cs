@@ -1,24 +1,29 @@
-using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using static Microsoft.Playwright.Assertions;
 using System.Text.RegularExpressions;
+using tests.Pages;
 namespace tests;
 public class LoginTests : PageTest{
     [Test]
     public async Task StandardUser_CanLogin(){
-        await TestHelpers.LoginAs(Page, TestConfig.StandardUser, TestConfig.Password);
+        var login = new LoginPage(Page);
+        await login.Open();
+        await login.LoginAs(TestConfig.StandardUser, TestConfig.Password);
         await Expect(Page).ToHaveURLAsync(new Regex(".*inventory"));
     }
-
     [Test]
     public async Task LockedOutUser_CannotLogin(){
-        await TestHelpers.LoginAs(Page, TestConfig.LockedUser, TestConfig.Password);
-        await Expect(Page.Locator("[data-test='error']")).ToContainTextAsync("locked out");
+        var login = new LoginPage(Page);
+        await login.Open();
+        await login.LoginAs(TestConfig.LockedUser, TestConfig.Password);
+        await Expect(login.Error).ToContainTextAsync("locked out");
     }
     [Test]
     public async Task WrongPassword_ShowsError(){
-        await TestHelpers.LoginAs(Page, TestConfig.StandardUser, "wrong_password");
-        await Expect(Page.Locator("[data-test='error']")).ToContainTextAsync("do not match");
+        var login = new LoginPage(Page);
+        await login.Open();
+        await login.LoginAs(TestConfig.StandardUser, "wrong_password");
+        await Expect(login.Error).ToContainTextAsync("do not match");
     }
 }
