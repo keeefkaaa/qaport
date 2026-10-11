@@ -9,41 +9,6 @@
   },
   "item": [
     {
-      "name": "GET /booking",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/booking",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "booking"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "GET /booking/{id}",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/booking/1",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "booking",
-            "1"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "POST /auth",
       "event": [
         {
@@ -51,7 +16,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\nvar jsonData = pm.response.json();\npm.environment.set(\"token\", jsonData.token);"
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\n\npm.test(\"Response has token\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property(\"token\");\n    pm.expect(jsonData.token).to.be.a(\"string\");\n    pm.environment.set(\"token\", jsonData.token);\n});"
             ]
           }
         }
@@ -88,7 +53,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response has token\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property(\"token\");\n    pm.environment.set(\"token\", jsonData.token);\n});"
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response has bookingid\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property(\"bookingid\");\n    pm.expect(jsonData.bookingid).to.be.a(\"number\");\n    pm.environment.set(\"booking_id\", jsonData.bookingid);\n});\n\npm.test(\"Booking data matches request\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.booking.firstname).to.eql(\"Test\");\n    pm.expect(jsonData.booking.totalprice).to.eql(150);\n});"
             ]
           }
         }
@@ -118,7 +83,75 @@
       "response": []
     },
     {
+      "name": "GET /booking",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is less than 1500ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});\n\npm.test(\"Response is an array\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.be.an(\"array\");\n    pm.expect(jsonData.length).to.be.above(0);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "booking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /booking/{id}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response has firstname and lastname\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property(\"firstname\");\n    pm.expect(jsonData).to.have.property(\"lastname\");\n    pm.expect(jsonData.firstname).to.be.a(\"string\");\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/booking/{{booking_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "booking",
+            "{{booking_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "PUT /booking/{id}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Firstname was updated\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.firstname).to.eql(\"Updated\");\n});\n\npm.test(\"Totalprice was updated\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.totalprice).to.eql(200);\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "PUT",
         "header": [
@@ -137,13 +170,13 @@
           }
         },
         "url": {
-          "raw": "{{base_url}}/booking/1",
+          "raw": "{{base_url}}/booking/{{booking_id}}",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "booking",
-            "1"
+            "{{booking_id}}"
           ]
         }
       },
@@ -151,6 +184,17 @@
     },
     {
       "name": "DELETE /booking/{id}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n\npm.test(\"Response time is less than 1500ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "DELETE",
         "header": [
@@ -169,48 +213,13 @@
           }
         },
         "url": {
-          "raw": "{{base_url}}/booking/1",
+          "raw": "{{base_url}}/booking/{{booking_id}}",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "booking",
-            "1"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "GET /posts",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{jsonplaceholder_url}}/posts",
-          "host": [
-            "{{jsonplaceholder_url}}"
-          ],
-          "path": [
-            "posts"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "GET /posots/1",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{jsonplaceholder_url}}/posts/1",
-          "host": [
-            "{{jsonplaceholder_url}}"
-          ],
-          "path": [
-            "posts",
-            "1"
+            "{{booking_id}}"
           ]
         }
       },
@@ -218,6 +227,17 @@
     },
     {
       "name": "POST /posts",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is correct\", function () {\n    pm.response.to.have.status(201);\n});\n\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});\n\npm.test(\"Response has id\", function () {\n    pm.expect(pm.response.json()).to.have.property(\"id\");\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [],
@@ -243,7 +263,75 @@
       "response": []
     },
     {
+      "name": "GET /posts",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is correct\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{jsonplaceholder_url}}/posts",
+          "host": [
+            "{{jsonplaceholder_url}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /posts/1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is correct\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{jsonplaceholder_url}}/posts/1",
+          "host": [
+            "{{jsonplaceholder_url}}"
+          ],
+          "path": [
+            "posts",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "PUT /posts Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is correct\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "PUT",
         "header": [],
@@ -271,6 +359,17 @@
     },
     {
       "name": "DELETE /posts/1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is correct\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1500);\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "DELETE",
         "header": [],
