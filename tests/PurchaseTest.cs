@@ -1,3 +1,4 @@
+using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using static Microsoft.Playwright.Assertions;
@@ -12,7 +13,7 @@ public class PurchaseTests : PageTest{
 
         await inventory.AddFirstItemToCart();
         var cart = await inventory.OpenCart();
-        Assert.That(await cart.GetItemsCount(), Is.EqualTo(1));
+        await Expect(cart.CartItems).ToHaveCountAsync(1);
 
         var info = await cart.Checkout();
         await info.FillForm("Elena", "Tester", "12345");
@@ -25,5 +26,12 @@ public class PurchaseTests : PageTest{
 
         var complete = await overview.Finish();
         await Expect(complete.ThankYouHeader).ToHaveTextAsync("Thank you for your order!");
+    }
+    [TearDown]
+    public async Task ScreenshotOnFailure(){
+        if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Failed){
+            Directory.CreateDirectory("screenshots");
+            await Page.ScreenshotAsync(new(){Path = $"screenshots/{TestContext.CurrentContext.Test.Name}.png"});
+        }
     }
 }

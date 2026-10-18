@@ -26,3 +26,10 @@ jobs:
 
     - name: Run tests
       run: dotnet test tests/tests.csproj --no-build --verbosity normal
+
+    - name: Upload screenshots on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: failure-screenshots
+        path: tests/bin/Debug/net10.0/screenshots/
