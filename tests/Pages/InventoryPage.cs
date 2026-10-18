@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using System.Text.RegularExpressions;
+using static Microsoft.Playwright.Assertions;
 namespace tests.Pages;
 public class InventoryPage{
     private readonly IPage _page;
@@ -12,7 +13,10 @@ public class InventoryPage{
     private ILocator LogoutLink => _page.Locator("[data-test='logout-sidebar-link']");
     public ILocator CartButton => _page.GetByRole(AriaRole.Button,new() { NameRegex = new Regex("Cart") });
     public async Task SortBy(string label) => await SortCombobox.SelectOptionAsync(new SelectOptionValue { Label = label });
-    public async Task AddFirstItemToCart() => await AddToCartButtons.First.ClickAsync();
+    public async Task AddFirstItemToCart(){
+        await AddToCartButtons.First.ClickAsync();
+        await Expect(CartButton).ToHaveTextAsync(new Regex("1"));
+    }
     public async Task<string> GetFirstItemName() => await ItemNames.First.TextContentAsync() ?? "";
     public async Task<string> GetFirstItemPrice() => await Prices.First.TextContentAsync() ?? "";
 
